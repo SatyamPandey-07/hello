@@ -1,13 +1,10 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
 import SmoothScroll from "@/components/shared/SmoothScroll";
 
-const inter = Inter({ subsets: ["latin"], weight: ["300", "400", "600", "700"] });
-
 export const metadata: Metadata = {
-  title: "Porsche 911 | Precision in Motion",
-  description: "A cinematic luxury storytelling experience of the Porsche 911.",
+  title: "Porsche 911 | Form. Focus. Force.",
+  description: "A cinematic luxury experience of the Porsche 911.",
 };
 
 export default function RootLayout({
@@ -17,7 +14,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+      </head>
+      <body>
         <SmoothScroll>{children}</SmoothScroll>
       </body>
     </html>

@@ -1,71 +1,43 @@
 "use client";
 
-import { useGLTF, Environment, ContactShadows, PerspectiveCamera, Float, useScroll } from "@react-three/drei";
-import { useEffect, useRef, useLayoutEffect } from "react";
+import { useEffect } from "react";
 import * as THREE from "three";
-import { useFrame } from "@react-three/fiber";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGLTF } from "@react-three/drei";
 
-// Register ScrollTrigger
-if (typeof window !== "undefined") {
-    gsap.registerPlugin(ScrollTrigger);
-}
-
-// Model Source: a validated GLTF of a Porsche 911 930 Turbo
-const MODEL_URL = "https://raw.githubusercontent.com/UtkarshPathrabe/Porche-911-930-Turbo-1975-3D-Model/refs/heads/main/scene.gltf";
+const MODEL_URL = "/models/closed.glb";
 
 export default function PorscheModel() {
     const { scene } = useGLTF(MODEL_URL);
-    const carRef = useRef<THREE.Group>(null);
 
-    // Apply luxury materials/adjustments if needed
     useEffect(() => {
+        if (!scene) return;
+
+        scene.position.set(0, 0, 0);
+        scene.rotation.set(0, 0, 0);
+        scene.scale.set(1, 1, 1);
+
+        const box = new THREE.Box3().setFromObject(scene);
+        const center = box.getCenter(new THREE.Vector3());
+        const size = box.getSize(new THREE.Vector3());
+
+        // Center pivot at world origin, sit on Y=0
+        scene.position.set(-center.x, -center.y + size.y / 2, -center.z);
+
         scene.traverse((child) => {
             if (child instanceof THREE.Mesh) {
                 child.castShadow = true;
                 child.receiveShadow = true;
                 if (child.material) {
-                    child.material.envMapIntensity = 1.5;
+                    child.material.envMapIntensity = 2;
+                    child.material.needsUpdate = true;
                 }
             }
         });
     }, [scene]);
 
-    useLayoutEffect(() => {
-        if (!carRef.current) return;
-
-        const tl = gsap.timeline({
-            scrollTrigger: {
-                trigger: "#main-experience",
-                start: "75% top", // Start moving near the end
-                end: "bottom bottom",
-                scrub: 1,
-            }
-        });
-
-        tl.to(carRef.current.position, {
-            z: -10, // Drive forward
-            duration: 5,
-        });
-
-        return () => {
-            ScrollTrigger.getAll().forEach(st => {
-                if (st.vars.trigger === "#main-experience") st.kill();
-            });
-        };
-    }, []);
-
     return (
-        <group ref={carRef} dispose={null}>
-            <primitive object={scene} scale={1.2} position={[0, -0.5, 0]} />
-            <ContactShadows
-                position={[0, -0.5, 0]}
-                opacity={0.4}
-                scale={20}
-                blur={2}
-                far={4.5}
-            />
+        <group name="porsche-model">
+            <primitive object={scene} scale={1.2} />
         </group>
     );
 }

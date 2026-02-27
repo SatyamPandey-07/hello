@@ -3,11 +3,8 @@ import OverlayUI from "@/components/ui/OverlayUI";
 
 export default function Home() {
   return (
-    <main className="relative bg-porsche-grey">
-      {/* 3D Scene - Fixed Background */}
+    <main className="relative bg-[#0a0a0a]">
       <PorscheScene />
-
-      {/* Narrative UI - Scrollable Content */}
       <OverlayUI />
     </main>
   );
