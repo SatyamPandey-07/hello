@@ -24,8 +24,8 @@ export default function CameraRig() {
             }
         });
 
-        // Initial State (Hero)
-        cameraRef.current.position.set(0, 1.5, 8);
+        // Initial State (Hero) - Side Profile
+        cameraRef.current.position.set(-6, 1.2, 0);
         cameraRef.current.lookAt(0, 0, 0);
 
         // Section 2: Zoom to Door
