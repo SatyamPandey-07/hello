@@ -1,17 +1,30 @@
 "use client";
 
 import { motion, useScroll, useTransform } from "framer-motion";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Share2, ExternalLink, Twitter, Facebook, Linkedin } from "lucide-react";
+import { globalModelController } from "@/systems/modelSystem";
 
 export default function OverlayUI() {
     const ref = useRef<HTMLDivElement>(null);
     const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
     const [showShareMenu, setShowShareMenu] = useState(false);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const [currentModel, setCurrentModel] = useState<any>(globalModelController.current);
+
+    useEffect(() => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const unsubscribe = globalModelController.subscribe((newModel: any) => {
+            setCurrentModel(newModel);
+        });
+        return () => {
+            unsubscribe();
+        };
+    }, []);
 
     const handleShare = (platform: string) => {
         const url = typeof window !== "undefined" ? window.location.href : "";
-        const text = "Check out this incredible Porsche 911 3D Experience";
+        const text = `Check out this incredible ${currentModel.name} 3D Experience`;
         
         const urls: Record<string, string> = {
             twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`,

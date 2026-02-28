@@ -101,7 +101,11 @@ export function useScrollAudio() {
       });
 
       audioContextRef.current = audioElements;
-      setIsLoaded(true);
+      
+      // Use requestAnimationFrame to defer setState
+      requestAnimationFrame(() => {
+        setIsLoaded(true);
+      });
 
       // Start ambient and idle sounds
       const ambient = audioElements.ambient;
@@ -126,7 +130,7 @@ export function useScrollAudio() {
         audio.src = "";
       });
     };
-  }, []);
+  }, [audioLibrary]);
 
   // Mute/unmute functionality
   useEffect(() => {

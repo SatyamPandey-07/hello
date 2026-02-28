@@ -1,13 +1,15 @@
 "use client";
 
 import { Canvas } from "@react-three/fiber";
-import { Suspense, Component, ReactNode } from "react";
+import { Suspense, Component, ReactNode, useState, useEffect } from "react";
 import { Environment, ContactShadows } from "@react-three/drei";
 import { EffectComposer, Bloom, ChromaticAberration } from "@react-three/postprocessing";
 import { BlendFunction } from "postprocessing";
 import PorscheModel from "./PorscheModel";
 import CameraRig from "./CameraRig";
 import ScrollController from "./ScrollController";
+import { globalModelController } from "@/systems/modelSystem";
+import * as THREE from "three";
 
 class WebGLErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
     constructor(props: { children: ReactNode }) {
@@ -31,9 +33,52 @@ class WebGLErrorBoundary extends Component<{ children: ReactNode }, { hasError: 
     }
 }
 
+function DynamicFog({ config }: { config: any }) {
+    if (!config.visualTheme?.fog?.enabled) return null;
+    
+    const fog = config.visualTheme.fog;
+    return <fog attach="fog" args={[fog.color, fog.near, fog.far]} />;
+}
+
 export default function PorscheScene() {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const [currentModel, setCurrentModel] = useState<any>(globalModelController.current);
+
+    useEffect(() => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const unsubscribe = globalModelController.subscribe((newModel: any) => {
+            setCurrentModel(newModel);
+        });
+        return () => {
+            unsubscribe();
+        };
+    }, []);
+
+    const theme = currentModel.visualTheme || {
+        backgroundColor: '#050505',
+        gradientColors: ['#000000', '#0a0a0a', '#050505'],
+        environment: 'city'
+    };
+
     return (
-        <div className="fixed inset-0 w-full h-screen pointer-events-none z-0 bg-[#050505]">
+        <div 
+            className="fixed inset-0 w-full h-screen pointer-events-none z-0 transition-all duration-1000"
+            style={{ backgroundColor: theme.backgroundColor }}
+        >
+            {/* Dynamic Gradient Background Overlay */}
+            <div 
+                className="absolute inset-0 opacity-60 transition-opacity duration-1000"
+                style={{
+                    background: `radial-gradient(ellipse at center, ${theme.gradientColors[1]} 0%, ${theme.gradientColors[0]} 100%)`
+                }}
+            />
+
+            {/* Transition Overlay for Model Switching */}
+            <div
+                id="transition-overlay"
+                className="absolute inset-0 bg-black pointer-events-none opacity-0 transition-opacity duration-800 ease-in-out z-50"
+            />
+
             <WebGLErrorBoundary>
                 <Canvas
                     shadows
@@ -43,39 +88,13 @@ export default function PorscheScene() {
                     <Suspense fallback={null}>
                         <CameraRig />
                         <ScrollController />
-                        <PorscheModel />
+                        <PorscheModel key={currentModel.id} />
 
-                        {/* ── Cinematic Studio Lighting ── */}
-                        <ambientLight intensity={0.08} color="#f0ece4" />
+                        {/* Dynamic Fog based on model config */}
+                        <DynamicFog config={currentModel} />
 
-                        {/* Key light — warm, dramatic, from above-right */}
-                        <spotLight
-                            position={[8, 12, 8]}
-                            angle={0.2}
-                            penumbra={1}
-                            intensity={3}
-                            castShadow
-                            color="#fff5e6"
-                            shadow-mapSize-width={2048}
-                            shadow-mapSize-height={2048}
-                        />
-
-                        {/* Fill light — cool, subtle, from left */}
-                        <directionalLight position={[-6, 4, -4]} intensity={0.4} color="#e0e8ff" />
-
-                        {/* Rim light — sharp contour from behind */}
-                        <spotLight
-                            position={[-3, 5, -8]}
-                            angle={0.4}
-                            penumbra={0.5}
-                            intensity={1.5}
-                            color="#ffffff"
-                        />
-
-                        {/* Under-car bounce */}
-                        <pointLight position={[0, 0.1, 0]} intensity={0.15} color="#f0ece4" distance={5} />
-
-                        <Environment preset="city" />
+                        {/* Dynamic Environment */}
+                        <Environment preset={theme.environment as any} />
 
                         <ContactShadows
                             position={[0, -0.01, 0]}
