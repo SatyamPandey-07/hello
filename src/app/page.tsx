@@ -1,17 +1,34 @@
+import dynamic from "next/dynamic";
 import PorscheScene from "@/components/canvas/PorscheScene";
 import OverlayUI from "@/components/ui/OverlayUI";
-import FeatureCards from "@/components/sections/FeatureCards";
-import ModelShowcase from "@/components/sections/ModelShowcase";
-import TechnologySection from "@/components/sections/TechnologySection";
-import ParallaxGallery from "@/components/sections/ParallaxGallery";
-import Footer from "@/components/sections/Footer";
 import GlobalLoader from "@/components/ui/GlobalLoader";
+import ModelSwitcher from "@/components/ui/ModelSwitcher";
+
+// Lazy load section components for better initial load performance
+const FeatureCards = dynamic(() => import("@/components/sections/FeatureCards"), {
+  loading: () => <div className="h-screen" />,
+});
+const ModelShowcase = dynamic(() => import("@/components/sections/ModelShowcase"), {
+  loading: () => <div className="h-screen" />,
+});
+const TechnologySection = dynamic(() => import("@/components/sections/TechnologySection"), {
+  loading: () => <div className="h-screen" />,
+});
+const ParallaxGallery = dynamic(() => import("@/components/sections/ParallaxGallery"), {
+  loading: () => <div className="h-screen" />,
+});
+const Footer = dynamic(() => import("@/components/sections/Footer"), {
+  loading: () => <div className="h-96" />,
+});
 
 export default function Home() {
   return (
     <main className="relative bg-[#0a0a0a]">
       {/* Central 3D Loading Screen */}
       <GlobalLoader />
+
+      {/* Model Navigation Controls */}
+      <ModelSwitcher />
 
       {/* Hero 3D Scene with Overlay */}
       <PorscheScene />
