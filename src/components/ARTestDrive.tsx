@@ -2,8 +2,15 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Volume2, VolumeX, Eye, Lightbulb, Zap, ArrowLeft } from "lucide-react";
+import { Volume2, VolumeX, Eye, Lightbulb, Zap, ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
 import QRCode from "react-qr-code";
+
+const AR_MODELS = [
+  { name: "911 Heritage", src: "/models/porsche.glb" },
+  { name: "911 Carrera 4S", src: "/models/free_porsche_911_carrera_4s-compressed.glb" },
+  { name: "GT3 RS", src: "/models/porsche_gt3_rs-compressed.glb" },
+  { name: "918 Spyder", src: "/models/porsche_918_spyder_2015__www.vecarz.com-compressed.glb" },
+];
 
 // ─── Device detection ──────────────────────────────────────────────
 function getDeviceType(): "ios" | "android" | "desktop" {
@@ -26,6 +33,17 @@ export default function ARTestDrive() {
   const [deviceType, setDeviceType] = useState<"ios" | "android" | "desktop">("desktop");
   const [arUrl, setArUrl] = useState("");
   const [isLocalhost, setIsLocalhost] = useState(false);
+  const [currentModelIndex, setCurrentModelIndex] = useState(0);
+
+  const currentARModel = AR_MODELS[currentModelIndex];
+
+  const handlePrevModel = useCallback(() => {
+    setCurrentModelIndex((prev) => (prev - 1 + AR_MODELS.length) % AR_MODELS.length);
+  }, []);
+
+  const handleNextModel = useCallback(() => {
+    setCurrentModelIndex((prev) => (prev + 1) % AR_MODELS.length);
+  }, []);
 
   // Audio refs
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -295,8 +313,8 @@ export default function ARTestDrive() {
         <div className="flex-1 relative">
           <model-viewer
             ref={modelViewerRef}
-            src="/models/porsche.glb"
-            alt="Porsche 911 3D Model"
+            src={currentARModel.src}
+            alt={`${currentARModel.name} 3D Model`}
             camera-controls
             auto-rotate
             shadow-intensity="1"
@@ -315,6 +333,45 @@ export default function ARTestDrive() {
               outline: "none",
             }}
           />
+
+          {/* Prev / Next Arrows */}
+          <div className="absolute top-1/2 -translate-y-1/2 left-6 right-6 flex items-center justify-between pointer-events-none z-20">
+            <motion.button
+              onClick={handlePrevModel}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              className="pointer-events-auto w-12 h-12 rounded-full backdrop-blur-md bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all duration-300 flex items-center justify-center"
+              aria-label="Previous Model"
+            >
+              <ChevronLeft className="w-5 h-5 text-white" />
+            </motion.button>
+            <motion.button
+              onClick={handleNextModel}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              className="pointer-events-auto w-12 h-12 rounded-full backdrop-blur-md bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all duration-300 flex items-center justify-center"
+              aria-label="Next Model"
+            >
+              <ChevronRight className="w-5 h-5 text-white" />
+            </motion.button>
+          </div>
+
+          {/* Model name indicator */}
+          <motion.div
+            key={currentARModel.name}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="absolute top-6 left-1/2 -translate-x-1/2 z-20"
+          >
+            <div className="backdrop-blur-xl bg-black/30 border border-white/10 rounded-full px-5 py-2 flex items-center gap-3">
+              <span className="text-[10px] tracking-[0.3em] uppercase text-white/40 font-light">
+                {currentModelIndex + 1}/{AR_MODELS.length}
+              </span>
+              <span className="text-sm font-light text-white tracking-wide">
+                {currentARModel.name}
+              </span>
+            </div>
+          </motion.div>
 
           {/* Gradient overlays */}
           <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-[#111111] to-transparent pointer-events-none" />
@@ -423,7 +480,7 @@ export default function ARTestDrive() {
                   Experience in AR
                 </h1>
                 <p className="text-sm text-white/25 font-light tracking-wider max-w-sm">
-                  Place this Porsche in your real-world space using your phone
+                  Place the {currentARModel.name} in your real-world space using your phone
                 </p>
               </div>
 
@@ -597,8 +654,8 @@ export default function ARTestDrive() {
       <div className="flex-1 relative">
         <model-viewer
           ref={modelViewerRef}
-          src="/models/porsche.glb"
-          alt="Porsche 911 3D Model"
+          src={currentARModel.src}
+          alt={`${currentARModel.name} 3D Model`}
           ar
           ar-modes="scene-viewer webxr quick-look"
           camera-controls
@@ -621,6 +678,43 @@ export default function ARTestDrive() {
             outline: "none",
           }}
         />
+
+        {/* Prev / Next Arrows — Mobile */}
+        <div className="absolute top-1/2 -translate-y-1/2 left-4 right-4 flex items-center justify-between pointer-events-none z-20">
+          <motion.button
+            onClick={handlePrevModel}
+            whileTap={{ scale: 0.9 }}
+            className="pointer-events-auto w-10 h-10 rounded-full backdrop-blur-md bg-white/5 border border-white/10 flex items-center justify-center"
+            aria-label="Previous Model"
+          >
+            <ChevronLeft className="w-5 h-5 text-white" />
+          </motion.button>
+          <motion.button
+            onClick={handleNextModel}
+            whileTap={{ scale: 0.9 }}
+            className="pointer-events-auto w-10 h-10 rounded-full backdrop-blur-md bg-white/5 border border-white/10 flex items-center justify-center"
+            aria-label="Next Model"
+          >
+            <ChevronRight className="w-5 h-5 text-white" />
+          </motion.button>
+        </div>
+
+        {/* Model name indicator — Mobile */}
+        <motion.div
+          key={currentARModel.name}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="absolute top-16 left-1/2 -translate-x-1/2 z-20"
+        >
+          <div className="backdrop-blur-xl bg-black/30 border border-white/10 rounded-full px-4 py-1.5 flex items-center gap-2">
+            <span className="text-[9px] tracking-[0.2em] uppercase text-white/40 font-light">
+              {currentModelIndex + 1}/{AR_MODELS.length}
+            </span>
+            <span className="text-xs font-light text-white tracking-wide">
+              {currentARModel.name}
+            </span>
+          </div>
+        </motion.div>
 
         {/* Gradient overlays */}
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#111111] to-transparent pointer-events-none" />

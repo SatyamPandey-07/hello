@@ -32,12 +32,12 @@ canvas { touch-action: none; }
 
 /* Premium Typography */
 .text-hero {
-  font-weight: 800;
+  font-weight: 200;
   letter-spacing: 0.35em;
   line-height: 0.85;
   text-transform: uppercase;
-  color: rgba(240, 236, 228, 0.03);
-  text-shadow: 0 0 80px rgba(240, 236, 228, 0.015);
+  color: rgba(240, 236, 228, 0.08);
+    text-shadow: 0 0 60px rgba(240, 236, 228, 0.03);
 }
 
 .text-section-label {

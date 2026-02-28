@@ -4,6 +4,7 @@ import OverlayUI from "@/components/ui/OverlayUI";
 import ARExperienceCTA from "@/components/sections/ARExperienceCTA";
 import GlobalLoader from "@/components/ui/GlobalLoader";
 import ModelSwitcher from "@/components/ui/ModelSwitcher";
+import Navbar from "@/components/ui/Navbar";
 
 // Lazy load section components for better initial load performance
 const FeatureCards = dynamic(() => import("@/components/sections/FeatureCards"), {
@@ -25,6 +26,9 @@ const Footer = dynamic(() => import("@/components/sections/Footer"), {
 export default function Home() {
   return (
     <main className="relative bg-[#0a0a0a]">
+      {/* Navbar */}
+      <Navbar />
+
       {/* Central 3D Loading Screen */}
       <GlobalLoader />
 
@@ -36,19 +40,29 @@ export default function Home() {
       <OverlayUI />
       
       {/* Feature Cards Section */}
-      <FeatureCards />
+      <div id="experience">
+        <FeatureCards />
+      </div>
       
       {/* Model Showcase Carousel */}
-      <ModelShowcase />
+      <div id="models">
+        <ModelShowcase />
+      </div>
       
       {/* Technology Timeline */}
-      <TechnologySection />
+      <div id="technology">
+        <TechnologySection />
+      </div>
       
       {/* Parallax Gallery */}
-      <ParallaxGallery />
+      <div id="gallery">
+        <ParallaxGallery />
+      </div>
       
       {/* AR Test Drive Experience */}
-      <ARExperienceCTA />
+      <div id="configure">
+        <ARExperienceCTA />
+      </div>
       
       {/* Footer */}
       <Footer />
