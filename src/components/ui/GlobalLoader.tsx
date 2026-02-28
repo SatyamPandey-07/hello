@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useProgress } from "@react-three/drei";
 
 export default function GlobalLoader() {
-    const { progress, active } = useProgress();
+    const { progress } = useProgress();
     const [hidden, setHidden] = useState(false);
 
     useEffect(() => {
