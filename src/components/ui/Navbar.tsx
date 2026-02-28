@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X } from "lucide-react";
+import { Menu, X, GitCompareArrows } from "lucide-react";
+import Link from "next/link";
 
 const navLinks = [
     { label: "Models", href: "#models" },
@@ -77,8 +78,15 @@ export default function Navbar() {
                                 ))}
                             </div>
 
-                            {/* CTA + Mobile Toggle */}
+                            {/* CTA + Compare + Mobile Toggle */}
                             <div className="flex items-center gap-4">
+                                <Link
+                                    href="/compare"
+                                    className="hidden md:inline-flex items-center gap-2 text-[0.65rem] tracking-[0.15em] uppercase px-4 py-2 text-white/40 hover:text-white/80 transition-all duration-300 font-light group"
+                                >
+                                    <GitCompareArrows className="w-3.5 h-3.5 group-hover:text-[#D5001C] transition-colors" />
+                                    Compare
+                                </Link>
                                 <a
                                     href="#"
                                     className="hidden md:inline-block text-[0.65rem] tracking-[0.15em] uppercase px-5 py-2 border border-white/15 text-white/60 hover:text-white hover:border-white/30 transition-all duration-300 rounded-sm font-light"
@@ -121,6 +129,14 @@ export default function Navbar() {
                                                 {link.label}
                                             </motion.a>
                                         ))}
+                                        <Link
+                                            href="/compare"
+                                            className="flex items-center justify-center gap-2 text-sm tracking-[0.2em] uppercase text-white/50 hover:text-white transition-colors font-light py-2 border-b border-white/5"
+                                            onClick={() => setMobileOpen(false)}
+                                        >
+                                            <GitCompareArrows className="w-4 h-4" />
+                                            Compare Models
+                                        </Link>
                                         <a
                                             href="#"
                                             className="mt-2 text-center text-xs tracking-[0.15em] uppercase px-5 py-3 border border-white/15 text-white/60 hover:text-white hover:border-white/30 transition-all duration-300 font-light"
