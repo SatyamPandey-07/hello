@@ -1,11 +1,36 @@
 "use client";
 
 import { motion, useScroll, useTransform } from "framer-motion";
-import { useRef } from "react";
+import { useRef, useState } from "react";
+import { Share2, ExternalLink, Twitter, Facebook, Linkedin } from "lucide-react";
 
 export default function OverlayUI() {
     const ref = useRef<HTMLDivElement>(null);
     const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
+    const [showShareMenu, setShowShareMenu] = useState(false);
+
+    const handleShare = (platform: string) => {
+        const url = typeof window !== "undefined" ? window.location.href : "";
+        const text = "Check out this incredible Porsche 911 3D Experience";
+        
+        const urls: Record<string, string> = {
+            twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`,
+            facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
+            linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`,
+        };
+        
+        if (urls[platform]) {
+            window.open(urls[platform], "_blank", "width=600,height=400");
+        }
+        setShowShareMenu(false);
+    };
+
+    const copyToClipboard = () => {
+        if (typeof window !== "undefined") {
+            navigator.clipboard.writeText(window.location.href);
+            setShowShareMenu(false);
+        }
+    };
 
     // Scene 1: 0-10%
     const s1Title = useTransform(scrollYProgress, [0, 0.02, 0.07, 0.09], [0, 1, 1, 0]);
@@ -34,6 +59,65 @@ export default function OverlayUI() {
 
     return (
         <div ref={ref} id="scroll-container" className="relative z-10 w-full">
+            
+            {/* ═══ SHARE BUTTON (FIXED) ═══ */}
+            <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1 }}
+                className="fixed top-6 right-6 z-50 pointer-events-auto"
+            >
+                <div className="relative">
+                    <button
+                        onClick={() => setShowShareMenu(!showShareMenu)}
+                        className="p-3 bg-white/5 hover:bg-white/10 backdrop-blur-md border border-white/10 rounded-full transition-all duration-300 group"
+                        aria-label="Share"
+                    >
+                        <Share2 className="w-5 h-5 text-white/70 group-hover:text-white transition-colors" />
+                    </button>
+                    
+                    {showShareMenu && (
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9, y: -10 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            className="absolute top-full right-0 mt-2 bg-black/90 backdrop-blur-xl border border-white/10 rounded-2xl p-3 min-w-[200px] shadow-2xl"
+                        >
+                            <p className="text-xs text-white/40 uppercase tracking-wider mb-3 px-2">Share</p>
+                            <div className="flex flex-col gap-1">
+                                <button
+                                    onClick={() => handleShare("twitter")}
+                                    className="flex items-center gap-3 px-3 py-2 hover:bg-white/5 rounded-lg transition-colors text-left"
+                                >
+                                    <Twitter className="w-4 h-4 text-white/60" />
+                                    <span className="text-sm text-white/80">Twitter</span>
+                                </button>
+                                <button
+                                    onClick={() => handleShare("facebook")}
+                                    className="flex items-center gap-3 px-3 py-2 hover:bg-white/5 rounded-lg transition-colors text-left"
+                                >
+                                    <Facebook className="w-4 h-4 text-white/60" />
+                                    <span className="text-sm text-white/80">Facebook</span>
+                                </button>
+                                <button
+                                    onClick={() => handleShare("linkedin")}
+                                    className="flex items-center gap-3 px-3 py-2 hover:bg-white/5 rounded-lg transition-colors text-left"
+                                >
+                                    <Linkedin className="w-4 h-4 text-white/60" />
+                                    <span className="text-sm text-white/80">LinkedIn</span>
+                                </button>
+                                <div className="h-px bg-white/10 my-1" />
+                                <button
+                                    onClick={copyToClipboard}
+                                    className="flex items-center gap-3 px-3 py-2 hover:bg-white/5 rounded-lg transition-colors text-left"
+                                >
+                                    <ExternalLink className="w-4 h-4 text-white/60" />
+                                    <span className="text-sm text-white/80">Copy Link</span>
+                                </button>
+                            </div>
+                        </motion.div>
+                    )}
+                </div>
+            </motion.div>
 
             {/* ═══ SCENE 1 — SILHOUETTE ═══ */}
             <section className="h-[100vh] flex items-center justify-center pointer-events-none relative">
@@ -53,13 +137,43 @@ export default function OverlayUI() {
 
             {/* ═══ SCENE 2 — ORBIT ═══ */}
             <section className="h-[150vh] flex items-center pointer-events-none">
-                <motion.div style={{ opacity: s2 }} className="ml-10 md:ml-24 max-w-sm">
+                <motion.div style={{ opacity: s2 }} className="ml-10 md:ml-24 max-w-xl">
                     <p className="text-section-label mb-4">Exterior</p>
                     <h2 className="text-section-title text-3xl md:text-4xl mb-5">Sculpted<br />by Air</h2>
                     <div className="line-accent mb-5" />
-                    <p className="text-section-body max-w-xs">
+                    <p className="text-section-body max-w-xs mb-8">
                         Every contour shaped by decades of wind-tunnel refinement.
                     </p>
+                    
+                    {/* Specs Grid */}
+                    <div className="grid grid-cols-2 gap-4 mb-8 max-w-sm pointer-events-none">
+                        <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-4">
+                            <p className="text-[0.6rem] tracking-[0.3em] uppercase text-white/40 mb-1">Top Speed</p>
+                            <p className="text-2xl font-light text-white">190 mph</p>
+                        </div>
+                        <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-4">
+                            <p className="text-[0.6rem] tracking-[0.3em] uppercase text-white/40 mb-1">0-60 mph</p>
+                            <p className="text-2xl font-light text-white">3.9 sec</p>
+                        </div>
+                        <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-4">
+                            <p className="text-[0.6rem] tracking-[0.3em] uppercase text-white/40 mb-1">Power</p>
+                            <p className="text-2xl font-light text-white">443 hp</p>
+                        </div>
+                        <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-4">
+                            <p className="text-[0.6rem] tracking-[0.3em] uppercase text-white/40 mb-1">Engine</p>
+                            <p className="text-2xl font-light text-white">3.0L</p>
+                        </div>
+                    </div>
+
+                    {/* CTA Buttons */}
+                    <div className="flex gap-4 pointer-events-auto">
+                        <button className="px-6 py-3 bg-white text-black font-medium text-sm tracking-wider uppercase hover:bg-white/90 transition-all duration-300 hover:scale-105">
+                            Configure
+                        </button>
+                        <button className="px-6 py-3 bg-transparent border border-white/30 text-white font-medium text-sm tracking-wider uppercase hover:bg-white/5 hover:border-white/50 transition-all duration-300">
+                            Test Drive
+                        </button>
+                    </div>
                 </motion.div>
             </section>
 
@@ -139,15 +253,35 @@ export default function OverlayUI() {
 
             {/* ═══ SCENE 9 — PANORAMIC CABIN ═══ */}
             <section className="h-[80vh] flex items-center justify-center pointer-events-none">
-                <motion.div style={{ opacity: s9 }} className="text-center max-w-md">
+                <motion.div style={{ opacity: s9 }} className="text-center max-w-2xl px-6">
                     <p className="text-section-label mb-3">Atmosphere</p>
                     <h3 className="text-section-title text-2xl md:text-3xl mb-3 tracking-[0.15em]">
                         Cabin Architecture
                     </h3>
                     <div className="w-12 h-[1px] bg-white/10 mx-auto mb-4" />
-                    <p className="text-section-body text-center">
+                    <p className="text-section-body text-center mb-8">
                         Ambient lighting. Carbon fiber trim. A sanctuary of singular focus.
                     </p>
+
+                    {/* Technical Specs */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8 pointer-events-none">
+                        <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-3">
+                            <p className="text-[0.5rem] tracking-[0.3em] uppercase text-white/40 mb-1">Transmission</p>
+                            <p className="text-sm font-light text-white">8-Speed PDK</p>
+                        </div>
+                        <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-3">
+                            <p className="text-[0.5rem] tracking-[0.3em] uppercase text-white/40 mb-1">Drive</p>
+                            <p className="text-sm font-light text-white">RWD / AWD</p>
+                        </div>
+                        <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-3">
+                            <p className="text-[0.5rem] tracking-[0.3em] uppercase text-white/40 mb-1">Weight</p>
+                            <p className="text-sm font-light text-white">3,354 lbs</p>
+                        </div>
+                        <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-3">
+                            <p className="text-[0.5rem] tracking-[0.3em] uppercase text-white/40 mb-1">Torque</p>
+                            <p className="text-sm font-light text-white">390 lb-ft</p>
+                        </div>
+                    </div>
                 </motion.div>
             </section>
 
@@ -156,16 +290,82 @@ export default function OverlayUI() {
 
             {/* ═══ SCENE 11 — ASCEND ═══ */}
             <section className="h-[100vh] flex flex-col items-center justify-center pointer-events-none">
-                <motion.div style={{ opacity: s11, y: s11y }} className="text-center">
+                <motion.div style={{ opacity: s11, y: s11y }} className="text-center px-6">
                     <h2 className="text-5xl md:text-7xl font-extralight tracking-[0.4em] uppercase mb-8">
                         Porsche
                     </h2>
-                    <div className="flex flex-col items-center gap-6">
+                    <div className="flex flex-col items-center gap-6 mb-12">
                         <div className="w-16 h-[1px] bg-white/15" />
                         <p className="text-xs tracking-[0.7em] uppercase text-white/30 font-light">
                             Engineered for Emotion
                         </p>
                     </div>
+
+                    {/* Final CTA */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.5 }}
+                        className="flex flex-col sm:flex-row gap-4 justify-center pointer-events-auto"
+                    >
+                        <button className="px-8 py-4 bg-white text-black font-medium text-sm tracking-wider uppercase hover:bg-white/90 transition-all duration-300 hover:scale-105 shadow-2xl">
+                            Build Your 911
+                        </button>
+                        <button className="px-8 py-4 bg-transparent border border-white/30 text-white font-medium text-sm tracking-wider uppercase hover:bg-white/5 hover:border-white/50 transition-all duration-300">
+                            Find a Dealer
+                        </button>
+                        <button className="px-8 py-4 bg-transparent border border-white/30 text-white font-medium text-sm tracking-wider uppercase hover:bg-white/5 hover:border-white/50 transition-all duration-300">
+                            Schedule Test Drive
+                        </button>
+                    </motion.div>
+
+                    {/* Specifications Summary */}
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        whileInView={{ opacity: 1 }}
+                        transition={{ delay: 0.8 }}
+                        className="mt-16 max-w-4xl mx-auto"
+                    >
+                        <h3 className="text-xs tracking-[0.5em] uppercase text-white/40 mb-6">Technical Specifications</h3>
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 pointer-events-none">
+                            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-4 text-center">
+                                <p className="text-[0.5rem] tracking-[0.3em] uppercase text-white/40 mb-2">Engine Type</p>
+                                <p className="text-xs font-light text-white">Twin-Turbo Flat-6</p>
+                            </div>
+                            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-4 text-center">
+                                <p className="text-[0.5rem] tracking-[0.3em] uppercase text-white/40 mb-2">Displacement</p>
+                                <p className="text-xs font-light text-white">2,981 cc</p>
+                            </div>
+                            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-4 text-center">
+                                <p className="text-[0.5rem] tracking-[0.3em] uppercase text-white/40 mb-2">Max Power</p>
+                                <p className="text-xs font-light text-white">443 hp @ 6,500 rpm</p>
+                            </div>
+                            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-4 text-center">
+                                <p className="text-[0.5rem] tracking-[0.3em] uppercase text-white/40 mb-2">Max Torque</p>
+                                <p className="text-xs font-light text-white">390 lb-ft @ 2,300 rpm</p>
+                            </div>
+                            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-4 text-center">
+                                <p className="text-[0.5rem] tracking-[0.3em] uppercase text-white/40 mb-2">0-60 mph</p>
+                                <p className="text-xs font-light text-white">3.9 seconds</p>
+                            </div>
+                            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-4 text-center">
+                                <p className="text-[0.5rem] tracking-[0.3em] uppercase text-white/40 mb-2">Top Speed</p>
+                                <p className="text-xs font-light text-white">190 mph</p>
+                            </div>
+                        </div>
+                    </motion.div>
+
+                    {/* Footer */}
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        whileInView={{ opacity: 1 }}
+                        transition={{ delay: 1 }}
+                        className="mt-16 pt-8 border-t border-white/10"
+                    >
+                        <p className="text-[0.6rem] text-white/20 tracking-wider">
+                            © 2026 Porsche. All Specifications Subject to Change. 
+                        </p>
+                    </motion.div>
                 </motion.div>
             </section>
         </div>
