@@ -78,7 +78,7 @@ export default function ModelSwitcher() {
 
             {/* Model Name Indicator */}
             <div
-                className={`fixed top-8 left-1/2 -translate-x-1/2 z-40 pointer-events-none transition-all duration-1000 ${
+                className={`fixed top-20 left-1/2 -translate-x-1/2 z-40 pointer-events-none transition-all duration-1000 ${
                     isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'
                 }`}
             >

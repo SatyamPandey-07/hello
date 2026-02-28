@@ -134,7 +134,7 @@ export default function OverlayUI() {
 
             {/* ═══ SCENE 1 — SILHOUETTE ═══ */}
             <section className="h-[100vh] flex items-center justify-center pointer-events-none relative">
-                <motion.h1 style={{ opacity: s1Title }} className="text-hero text-[18vw] md:text-[15vw] select-none absolute">
+                <motion.h1 style={{ opacity: s1Title }} className="text-hero text-[12vw] md:text-[10vw] select-none absolute">
                     PORSCHE
                 </motion.h1>
                 <motion.div style={{ opacity: s1Sub }} className="absolute bottom-[20vh] text-center">

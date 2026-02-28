@@ -2,8 +2,16 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Volume2, VolumeX, Eye, Lightbulb, Zap, ArrowLeft } from "lucide-react";
+import { Volume2, VolumeX, Eye, Lightbulb, Zap, ArrowLeft, ChevronLeft, ChevronRight, Palette } from "lucide-react";
 import QRCode from "react-qr-code";
+import ARConfigurator from "./ARConfigurator";
+
+const AR_MODELS = [
+  { name: "911 Heritage", src: "/models/porsche.glb" },
+  { name: "911 Carrera 4S", src: "/models/free_porsche_911_carrera_4s-compressed.glb" },
+  { name: "GT3 RS", src: "/models/porsche_gt3_rs-compressed.glb" },
+  { name: "918 Spyder", src: "/models/porsche_918_spyder_2015__www.vecarz.com-compressed.glb" },
+];
 
 // ─── Device detection ──────────────────────────────────────────────
 function getDeviceType(): "ios" | "android" | "desktop" {
@@ -26,6 +34,17 @@ export default function ARTestDrive() {
   const [deviceType, setDeviceType] = useState<"ios" | "android" | "desktop">("desktop");
   const [arUrl, setArUrl] = useState("");
   const [isLocalhost, setIsLocalhost] = useState(false);
+  const [currentModelIndex, setCurrentModelIndex] = useState(0);
+
+  const currentARModel = AR_MODELS[currentModelIndex];
+
+  const handlePrevModel = useCallback(() => {
+    setCurrentModelIndex((prev) => (prev - 1 + AR_MODELS.length) % AR_MODELS.length);
+  }, []);
+
+  const handleNextModel = useCallback(() => {
+    setCurrentModelIndex((prev) => (prev + 1) % AR_MODELS.length);
+  }, []);
 
   // Audio refs
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -250,8 +269,42 @@ export default function ARTestDrive() {
     }
   }, []);
 
+  // ─── Change model color via Materials API ──────────────────────
+  const handleColorChange = useCallback((hex: string) => {
+    const mv = modelViewerRef.current;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (!mv || !(mv as any).model) return;
+
+    // Convert hex to RGB [0..1]
+    const r = parseInt(hex.slice(1, 3), 16) / 255;
+    const g = parseInt(hex.slice(3, 5), 16) / 255;
+    const b = parseInt(hex.slice(5, 7), 16) / 255;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const model = (mv as any).model;
+    if (!model.materials) return;
+
+    // Apply color to all paint/body materials
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    for (const material of model.materials as any[]) {
+      const name = (material.name || "").toLowerCase();
+      // Match paint, body, car_paint, carpaint, exterior, etc.
+      if (
+        name.includes("paint") ||
+        name.includes("body") ||
+        name.includes("exterior") ||
+        name.includes("car_") ||
+        name.includes("karosserie") ||
+        name.includes("lack")
+      ) {
+        material.pbrMetallicRoughness.setBaseColorFactor([r, g, b, 1]);
+      }
+    }
+  }, []);
+
   // ─── State for desktop QR modal ──────────────────────────────────
   const [showQR, setShowQR] = useState(false);
+  const [showMobileConfig, setShowMobileConfig] = useState(false);
 
   // ══════════════════════════════════════════════════════════════════
   //  DESKTOP VIEW — 3D Preview + "View on Mobile" → QR
@@ -262,7 +315,7 @@ export default function ARTestDrive() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.8 }}
-        className="w-full h-screen bg-[#111111] flex flex-col relative overflow-hidden"
+        className="w-full h-screen bg-[#111111] flex flex-row relative overflow-hidden"
       >
         {/* Back to home */}
         <motion.a
@@ -291,12 +344,12 @@ export default function ARTestDrive() {
           </span>
         </motion.div>
 
-        {/* 3D Model Viewer — fullscreen background */}
-        <div className="flex-1 relative">
+        {/* ── LEFT SIDE: 3D Viewer ──────────────────────────── */}
+        <div className="flex-1 relative flex flex-col">
           <model-viewer
             ref={modelViewerRef}
-            src="/models/porsche.glb"
-            alt="Porsche 911 3D Model"
+            src={currentARModel.src}
+            alt={`${currentARModel.name} 3D Model`}
             camera-controls
             auto-rotate
             shadow-intensity="1"
@@ -316,17 +369,66 @@ export default function ARTestDrive() {
             }}
           />
 
+          {/* Prev / Next Arrows */}
+          <div className="absolute top-1/2 -translate-y-1/2 left-6 right-6 flex items-center justify-between pointer-events-none z-20">
+            <motion.button
+              onClick={handlePrevModel}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              className="pointer-events-auto w-12 h-12 rounded-full backdrop-blur-md bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all duration-300 flex items-center justify-center"
+              aria-label="Previous Model"
+            >
+              <ChevronLeft className="w-5 h-5 text-white" />
+            </motion.button>
+            <motion.button
+              onClick={handleNextModel}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              className="pointer-events-auto w-12 h-12 rounded-full backdrop-blur-md bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all duration-300 flex items-center justify-center"
+              aria-label="Next Model"
+            >
+              <ChevronRight className="w-5 h-5 text-white" />
+            </motion.button>
+          </div>
+
+          {/* Model name indicator */}
+          <motion.div
+            key={currentARModel.name}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="absolute top-6 left-1/2 -translate-x-1/2 z-20"
+          >
+            <div className="backdrop-blur-xl bg-black/30 border border-white/10 rounded-full px-5 py-2 flex items-center gap-3">
+              <span className="text-[10px] tracking-[0.3em] uppercase text-white/40 font-light">
+                {currentModelIndex + 1}/{AR_MODELS.length}
+              </span>
+              <span className="text-sm font-light text-white tracking-wide">
+                {currentARModel.name}
+              </span>
+            </div>
+          </motion.div>
+
           {/* Gradient overlays */}
           <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-[#111111] to-transparent pointer-events-none" />
           <div className="absolute top-0 left-0 right-0 h-20 bg-gradient-to-b from-[#111111]/80 to-transparent pointer-events-none" />
         </div>
+
+        {/* ── RIGHT SIDE: Configurator Panel ──────────────────── */}
+        <motion.div
+          initial={{ opacity: 0, x: 30 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.5, duration: 0.8 }}
+          className="w-80 h-full bg-[#0D0D0D] border-l border-white/5 flex-shrink-0 overflow-hidden"
+        >
+          <ARConfigurator modelName={currentARModel.name} onColorChange={handleColorChange} />
+        </motion.div>
 
         {/* Bottom panel — Title + "View on Mobile" button */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6, duration: 0.8 }}
-          className="absolute bottom-0 left-0 right-0 z-20 pb-10 px-8"
+          className="absolute bottom-0 left-0 right-80 z-20 pb-10 px-8"
         >
           <div className="max-w-4xl mx-auto">
             {/* Control buttons row */}
@@ -423,7 +525,7 @@ export default function ARTestDrive() {
                   Experience in AR
                 </h1>
                 <p className="text-sm text-white/25 font-light tracking-wider max-w-sm">
-                  Place this Porsche in your real-world space using your phone
+                  Place the {currentARModel.name} in your real-world space using your phone
                 </p>
               </div>
 
@@ -597,8 +699,8 @@ export default function ARTestDrive() {
       <div className="flex-1 relative">
         <model-viewer
           ref={modelViewerRef}
-          src="/models/porsche.glb"
-          alt="Porsche 911 3D Model"
+          src={currentARModel.src}
+          alt={`${currentARModel.name} 3D Model`}
           ar
           ar-modes="scene-viewer webxr quick-look"
           camera-controls
@@ -621,6 +723,43 @@ export default function ARTestDrive() {
             outline: "none",
           }}
         />
+
+        {/* Prev / Next Arrows — Mobile */}
+        <div className="absolute top-1/2 -translate-y-1/2 left-4 right-4 flex items-center justify-between pointer-events-none z-20">
+          <motion.button
+            onClick={handlePrevModel}
+            whileTap={{ scale: 0.9 }}
+            className="pointer-events-auto w-10 h-10 rounded-full backdrop-blur-md bg-white/5 border border-white/10 flex items-center justify-center"
+            aria-label="Previous Model"
+          >
+            <ChevronLeft className="w-5 h-5 text-white" />
+          </motion.button>
+          <motion.button
+            onClick={handleNextModel}
+            whileTap={{ scale: 0.9 }}
+            className="pointer-events-auto w-10 h-10 rounded-full backdrop-blur-md bg-white/5 border border-white/10 flex items-center justify-center"
+            aria-label="Next Model"
+          >
+            <ChevronRight className="w-5 h-5 text-white" />
+          </motion.button>
+        </div>
+
+        {/* Model name indicator — Mobile */}
+        <motion.div
+          key={currentARModel.name}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="absolute top-16 left-1/2 -translate-x-1/2 z-20"
+        >
+          <div className="backdrop-blur-xl bg-black/30 border border-white/10 rounded-full px-4 py-1.5 flex items-center gap-2">
+            <span className="text-[9px] tracking-[0.2em] uppercase text-white/40 font-light">
+              {currentModelIndex + 1}/{AR_MODELS.length}
+            </span>
+            <span className="text-xs font-light text-white tracking-wide">
+              {currentARModel.name}
+            </span>
+          </div>
+        </motion.div>
 
         {/* Gradient overlays */}
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#111111] to-transparent pointer-events-none" />
@@ -733,9 +872,49 @@ export default function ARTestDrive() {
               />
               <span className="ar-btn-label">Interior</span>
             </motion.button>
+
+            {/* Configure toggle */}
+            <motion.button
+              onClick={() => setShowMobileConfig(!showMobileConfig)}
+              whileTap={{ scale: 0.95 }}
+              className={`ar-glass-btn ${showMobileConfig ? "ar-glass-btn-active" : ""}`}
+              id="ar-config-btn"
+            >
+              <Palette
+                className={`w-4 h-4 transition-colors duration-300 ${showMobileConfig ? "text-[#D5001C]" : "text-white/50"
+                  }`}
+              />
+              <span className="ar-btn-label">Config</span>
+            </motion.button>
           </div>
         </div>
       </motion.div>
+
+      {/* ── Mobile Config Drawer ───────────────────────────────── */}
+      <AnimatePresence>
+        {showMobileConfig && (
+          <motion.div
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            className="fixed bottom-0 left-0 right-0 z-[110] h-[65vh] bg-[#0D0D0D] border-t border-white/10 rounded-t-2xl overflow-hidden"
+          >
+            {/* Drag handle */}
+            <div className="flex justify-center py-3">
+              <div className="w-10 h-1 rounded-full bg-white/15" />
+            </div>
+            {/* Close button */}
+            <button
+              onClick={() => setShowMobileConfig(false)}
+              className="absolute top-3 right-4 text-xs text-white/40 hover:text-white/70 tracking-wider uppercase z-10"
+            >
+              Close
+            </button>
+            <ARConfigurator modelName={currentARModel.name} onColorChange={handleColorChange} />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }

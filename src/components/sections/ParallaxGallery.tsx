@@ -1,36 +1,129 @@
 "use client";
 
 import { motion, useScroll, useTransform } from "framer-motion";
-import { useRef } from "react";
+import { useRef, useState } from "react";
+import Image from "next/image";
 
 const galleryItems = [
     {
         title: "Precision Engineering",
         description: "Every component crafted to perfection",
-        position: "top-0 left-0",
         size: "md:col-span-2 md:row-span-2",
-        hasVideo: true,
-        videoSrc: "/porsche-precision.mp4"
+        image: "https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?q=80&w=2000&auto=format&fit=crop",
+        youtubeId: "DZAdVY9kKbc",
     },
     {
         title: "Interior Luxury",
         description: "Hand-stitched leather details",
-        position: "top-0 right-0",
-        size: "md:col-span-1 md:row-span-1"
+        size: "md:col-span-1 md:row-span-1",
+        image: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=2000&auto=format&fit=crop",
+        youtubeId: "OGEEQ9VEEmc",
     },
     {
         title: "Performance Track",
         description: "Born on the Nürburgring",
-        position: "bottom-0 left-0",
-        size: "md:col-span-1 md:row-span-1"
+        size: "md:col-span-1 md:row-span-1",
+        image: "https://images.unsplash.com/photo-1584345604476-8ec5f82d661f?q=80&w=2000&auto=format&fit=crop",
+        youtubeId: "B7oOtTgYEZM",
     },
     {
         title: "Night Drive",
         description: "LED matrix headlights",
-        position: "bottom-0 right-0",
-        size: "md:col-span-1 md:row-span-2"
+        size: "md:col-span-1 md:row-span-2",
+        image: "https://images.unsplash.com/photo-1580274455191-1c62238fa333?q=80&w=2000&auto=format&fit=crop",
+        youtubeId: "j1pBfCmmrCo",
     }
 ];
+
+function GalleryCard({ item, index, y }: { item: typeof galleryItems[0]; index: number; y: any }) {
+    const [isHovered, setIsHovered] = useState(false);
+
+    const youtubeEmbedUrl = `https://www.youtube.com/embed/${item.youtubeId}?autoplay=1&mute=1&loop=1&controls=0&showinfo=0&rel=0&playlist=${item.youtubeId}&modestbranding=1&playsinline=1&disablekb=1&fs=0&iv_load_policy=3`;
+
+    return (
+        <motion.div
+            style={{ y }}
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, delay: index * 0.1 }}
+            viewport={{ once: true }}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            className={`group relative ${item.size} h-[400px] rounded-2xl overflow-hidden cursor-pointer`}
+        >
+            {/* Background image (always visible) */}
+            <div className="absolute inset-0">
+                <Image
+                    src={item.image}
+                    alt={item.title}
+                    fill
+                    className="object-cover transition-transform duration-700 group-hover:scale-110"
+                    unoptimized
+                />
+                {/* Dark overlay on image */}
+                <div className="absolute inset-0 bg-black/40" />
+            </div>
+
+            {/* YouTube iframe (hidden by default, shows on hover) */}
+            <div className={`absolute inset-0 z-10 transition-opacity duration-500 ${isHovered ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+                {isHovered && (
+                    <iframe
+                        className="w-full h-full pointer-events-none"
+                        style={{
+                            transform: 'scale(1.5)',
+                            transformOrigin: 'center center',
+                            border: 'none',
+                        }}
+                        src={youtubeEmbedUrl}
+                        title={item.title}
+                        allow="autoplay; encrypted-media"
+                        allowFullScreen={false}
+                    />
+                )}
+                {/* Subtle overlay on video */}
+                <div className="absolute inset-0 bg-black/20" />
+            </div>
+
+            {/* Hover gradient overlay */}
+            <div className="absolute inset-0 z-20 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-90 transition-opacity duration-500" />
+
+            {/* Content */}
+            <div className="absolute inset-0 z-30 p-8 flex flex-col justify-end">
+                <motion.h3
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="text-2xl md:text-3xl font-light text-white mb-2 tracking-wide"
+                >
+                    {item.title}
+                </motion.h3>
+                <motion.p
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
+                    transition={{ delay: 0.3 }}
+                    className="text-white/70 text-sm"
+                >
+                    {item.description}
+                </motion.p>
+
+                {/* Play indicator */}
+                <motion.div
+                    className="mt-4 flex items-center gap-2 text-white/0 group-hover:text-white/60 transition-colors duration-500"
+                >
+                    <div className="w-6 h-6 rounded-full border border-white/40 flex items-center justify-center">
+                        <svg className="w-3 h-3 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M8 5v14l11-7z" />
+                        </svg>
+                    </div>
+                    <span className="text-xs uppercase tracking-wider">Playing</span>
+                </motion.div>
+            </div>
+
+            {/* Border glow on hover */}
+            <div className="absolute inset-0 z-30 border border-white/0 group-hover:border-white/20 rounded-2xl transition-colors duration-500 pointer-events-none" />
+        </motion.div>
+    );
+}
 
 export default function ParallaxGallery() {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -41,12 +134,23 @@ export default function ParallaxGallery() {
 
     const y1 = useTransform(scrollYProgress, [0, 1], [0, -100]);
     const y2 = useTransform(scrollYProgress, [0, 1], [0, 100]);
-    const scale = useTransform(scrollYProgress, [0, 0.5, 1], [0.8, 1, 0.8]);
 
     return (
         <section ref={containerRef} className="relative py-32 px-6 md:px-12 overflow-hidden bg-black">
-            {/* Background gradient */}
             <div className="absolute inset-0 bg-gradient-to-b from-black via-zinc-900 to-black" />
+
+            {/* Background image */}
+            <div className="absolute inset-0 pointer-events-none">
+                <Image
+                    src="/istockphoto-1419988769-612x612.jpg"
+                    alt=""
+                    fill
+                    className="object-cover opacity-[0.08]"
+                    unoptimized
+                    aria-hidden="true"
+                />
+                <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/60" />
+            </div>
 
             <div className="relative z-10 max-w-7xl mx-auto">
                 {/* Header */}
@@ -67,91 +171,14 @@ export default function ParallaxGallery() {
 
                 {/* Gallery Grid */}
                 <div className="grid md:grid-cols-3 gap-6">
-                    {galleryItems.map((item, index) => {
-                        const useY1 = index % 2 === 0;
-                        return (
-                            <motion.div
-                                key={index}
-                                style={{ 
-                                    y: useY1 ? y1 : y2,
-                                    scale
-                                }}
-                                initial={{ opacity: 0, scale: 0.9 }}
-                                whileInView={{ opacity: 1, scale: 1 }}
-                                transition={{ duration: 0.8, delay: index * 0.1 }}
-                                viewport={{ once: true }}
-                                className={`group relative ${item.size} h-[400px] rounded-2xl overflow-hidden cursor-pointer`}
-                            >
-                                {/* Background placeholder with gradient or video */}
-                                <div className="absolute inset-0 bg-gradient-to-br from-zinc-800 via-zinc-900 to-black">
-                                    {item.hasVideo ? (
-                                        <div className="absolute inset-0 z-0">
-                                            <video
-                                                className="w-full h-full object-cover opacity-60"
-                                                autoPlay
-                                                loop
-                                                muted
-                                                playsInline
-                                                preload="auto"
-                                            >
-                                                <source src={item.videoSrc} type="video/mp4" />
-                                            </video>
-                                            <div className="absolute inset-0 bg-black/40 z-10" />
-                                        </div>
-                                    ) : (
-                                        /* Animated mesh gradient */
-                                        <motion.div
-                                            animate={{
-                                                background: [
-                                                    'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 0%, transparent 50%)',
-                                                    'radial-gradient(circle at 80% 50%, rgba(255,255,255,0.1) 0%, transparent 50%)',
-                                                    'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 0%, transparent 50%)',
-                                                ]
-                                            }}
-                                            transition={{ duration: 5, repeat: Infinity }}
-                                            className="absolute inset-0"
-                                        />
-                                    )}
-                                </div>
-
-                                {/* Overlay */}
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-
-                                {/* Content */}
-                                <div className="absolute inset-0 p-8 flex flex-col justify-end translate-y-8 group-hover:translate-y-0 transition-transform duration-500">
-                                    <motion.h3
-                                        initial={{ opacity: 0, y: 20 }}
-                                        whileInView={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: 0.2 }}
-                                        className="text-2xl md:text-3xl font-light text-white mb-2 tracking-wide"
-                                    >
-                                        {item.title}
-                                    </motion.h3>
-                                    <motion.p
-                                        initial={{ opacity: 0 }}
-                                        whileInView={{ opacity: 1 }}
-                                        transition={{ delay: 0.3 }}
-                                        className="text-white/70 text-sm"
-                                    >
-                                        {item.description}
-                                    </motion.p>
-
-                                    {/* View more indicator */}
-                                    <motion.div
-                                        initial={{ opacity: 0, x: -20 }}
-                                        whileHover={{ x: 0, opacity: 1 }}
-                                        className="mt-4 flex items-center gap-2 text-white/50 text-xs uppercase tracking-wider"
-                                    >
-                                        <span>View Details</span>
-                                        <div className="w-8 h-[1px] bg-white/30" />
-                                    </motion.div>
-                                </div>
-
-                                {/* Border glow on hover */}
-                                <div className="absolute inset-0 border border-white/0 group-hover:border-white/20 rounded-2xl transition-colors duration-500" />
-                            </motion.div>
-                        );
-                    })}
+                    {galleryItems.map((item, index) => (
+                        <GalleryCard
+                            key={index}
+                            item={item}
+                            index={index}
+                            y={index % 2 === 0 ? y1 : y2}
+                        />
+                    ))}
                 </div>
 
                 {/* Bottom text */}
