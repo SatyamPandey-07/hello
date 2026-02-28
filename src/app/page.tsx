@@ -1,6 +1,12 @@
 import dynamic from "next/dynamic";
 import PorscheScene from "@/components/canvas/PorscheScene";
 import OverlayUI from "@/components/ui/OverlayUI";
+import FeatureCards from "@/components/sections/FeatureCards";
+import ModelShowcase from "@/components/sections/ModelShowcase";
+import TechnologySection from "@/components/sections/TechnologySection";
+import ParallaxGallery from "@/components/sections/ParallaxGallery";
+import ARExperienceCTA from "@/components/sections/ARExperienceCTA";
+import Footer from "@/components/sections/Footer";
 import GlobalLoader from "@/components/ui/GlobalLoader";
 import ModelSwitcher from "@/components/ui/ModelSwitcher";
 
@@ -45,6 +51,9 @@ export default function Home() {
       
       {/* Parallax Gallery */}
       <ParallaxGallery />
+      
+      {/* AR Test Drive Experience */}
+      <ARExperienceCTA />
       
       {/* Footer */}
       <Footer />
