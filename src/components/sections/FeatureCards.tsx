@@ -1,10 +1,21 @@
 "use client";
 
 import { motion, useScroll, useTransform } from "framer-motion";
-import { useRef } from "react";
+import { useRef, useCallback } from "react";
 import { Gauge, Wind, Zap, Shield } from "lucide-react";
 
-const features = [
+interface Feature {
+    icon: React.ComponentType<{ className?: string }>;
+    title: string;
+    description: string;
+    stat: string;
+    statLabel: string;
+    color: string;
+    hasVideo?: boolean;
+    videoSrc?: string;
+}
+
+const features: Feature[] = [
     {
         icon: Gauge,
         title: "Peak Performance",
@@ -23,11 +34,13 @@ const features = [
     },
     {
         icon: Zap,
-        title: "Electric Precision",
+        title: "Precision Engineering",
         description: "Porsche Active Suspension Management adapts to driving conditions in milliseconds.",
         stat: "10ms",
         statLabel: "Response Time",
-        color: "from-purple-500/20 to-pink-500/20"
+        color: "from-purple-500/20 to-pink-500/20",
+        hasVideo: true,
+        videoSrc: "/porsche-precision.mp4"
     },
     {
         icon: Shield,
@@ -41,6 +54,7 @@ const features = [
 
 export default function FeatureCards() {
     const containerRef = useRef<HTMLDivElement>(null);
+    const videoRef = useRef<HTMLVideoElement>(null);
     const { scrollYProgress } = useScroll({
         target: containerRef,
         offset: ["start end", "end start"]
@@ -48,6 +62,19 @@ export default function FeatureCards() {
 
     const opacity = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0, 1, 1, 0]);
     const scale = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0.8, 1, 1, 0.8]);
+
+    const handleMouseEnter = useCallback(() => {
+        if (videoRef.current) {
+            videoRef.current.currentTime = 0;
+            videoRef.current.play().catch(() => { });
+        }
+    }, []);
+
+    const handleMouseLeave = useCallback(() => {
+        if (videoRef.current) {
+            videoRef.current.pause();
+        }
+    }, []);
 
     return (
         <section ref={containerRef} className="relative py-32 px-6 md:px-12 overflow-hidden bg-black">
@@ -82,6 +109,7 @@ export default function FeatureCards() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     {features.map((feature, index) => {
                         const Icon = feature.icon;
+
                         return (
                             <motion.div
                                 key={index}
@@ -99,9 +127,31 @@ export default function FeatureCards() {
                                     transition: { duration: 0.3 }
                                 }}
                                 className="group relative"
+                                onMouseEnter={feature.hasVideo ? handleMouseEnter : undefined}
+                                onMouseLeave={feature.hasVideo ? handleMouseLeave : undefined}
                             >
                                 {/* Card */}
                                 <div className="relative h-full bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl border border-white/10 rounded-2xl p-8 overflow-hidden">
+                                    {/* Video background for precision engineering card — hidden by default, shown on hover */}
+                                    {feature.hasVideo && (
+                                        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-0">
+                                            <video
+                                                ref={videoRef}
+                                                className="w-full h-full object-cover"
+                                                loop
+                                                muted
+                                                playsInline
+                                                preload="auto"
+                                                disablePictureInPicture
+                                                controls={false}
+                                            >
+                                                <source src={feature.videoSrc} type="video/mp4" />
+                                            </video>
+                                            {/* Video overlay gradient for better text readability */}
+                                            <div className="absolute inset-0 bg-gradient-to-br from-black/40 via-transparent to-purple-900/30 z-10" />
+                                        </div>
+                                    )}
+
                                     {/* Hover gradient effect */}
                                     <div className={`absolute inset-0 bg-gradient-to-br ${feature.color} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
                                     

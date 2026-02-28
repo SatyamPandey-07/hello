@@ -8,7 +8,9 @@ const galleryItems = [
         title: "Precision Engineering",
         description: "Every component crafted to perfection",
         position: "top-0 left-0",
-        size: "md:col-span-2 md:row-span-2"
+        size: "md:col-span-2 md:row-span-2",
+        hasVideo: true,
+        videoSrc: "/porsche-precision.mp4"
     },
     {
         title: "Interior Luxury",
@@ -80,20 +82,36 @@ export default function ParallaxGallery() {
                                 viewport={{ once: true }}
                                 className={`group relative ${item.size} h-[400px] rounded-2xl overflow-hidden cursor-pointer`}
                             >
-                                {/* Background placeholder with gradient */}
+                                {/* Background placeholder with gradient or video */}
                                 <div className="absolute inset-0 bg-gradient-to-br from-zinc-800 via-zinc-900 to-black">
-                                    {/* Animated mesh gradient */}
-                                    <motion.div
-                                        animate={{
-                                            background: [
-                                                'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 0%, transparent 50%)',
-                                                'radial-gradient(circle at 80% 50%, rgba(255,255,255,0.1) 0%, transparent 50%)',
-                                                'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 0%, transparent 50%)',
-                                            ]
-                                        }}
-                                        transition={{ duration: 5, repeat: Infinity }}
-                                        className="absolute inset-0"
-                                    />
+                                    {item.hasVideo ? (
+                                        <div className="absolute inset-0 z-0">
+                                            <video
+                                                className="w-full h-full object-cover opacity-60"
+                                                autoPlay
+                                                loop
+                                                muted
+                                                playsInline
+                                                preload="auto"
+                                            >
+                                                <source src={item.videoSrc} type="video/mp4" />
+                                            </video>
+                                            <div className="absolute inset-0 bg-black/40 z-10" />
+                                        </div>
+                                    ) : (
+                                        /* Animated mesh gradient */
+                                        <motion.div
+                                            animate={{
+                                                background: [
+                                                    'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 0%, transparent 50%)',
+                                                    'radial-gradient(circle at 80% 50%, rgba(255,255,255,0.1) 0%, transparent 50%)',
+                                                    'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 0%, transparent 50%)',
+                                                ]
+                                            }}
+                                            transition={{ duration: 5, repeat: Infinity }}
+                                            className="absolute inset-0"
+                                        />
+                                    )}
                                 </div>
 
                                 {/* Overlay */}

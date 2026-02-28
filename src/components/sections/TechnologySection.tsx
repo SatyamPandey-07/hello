@@ -1,32 +1,41 @@
 "use client";
 
-import { motion, useScroll, useTransform } from "framer-motion";
-import { useRef } from "react";
+import { motion, useScroll, useTransform, useMotionValueEvent } from "framer-motion";
+import { useRef, useState } from "react";
 import { Sparkles, Cpu, Battery, Radio } from "lucide-react";
+import Image from "next/image";
 
 const innovations = [
     {
         year: "2024",
         title: "Active Ride Control",
         description: "Electrohydraulic single-wheel control for maximum agility and comfort",
-        icon: Sparkles
+        icon: Sparkles,
+        gradient: "from-amber-400 via-orange-500 to-red-500",
+        glowColor: "rgba(251,146,60,0.5)",
     },
     {
         year: "2025",
         title: "Intelligent Range",
         description: "AI-powered battery management optimizing performance and efficiency",
-        icon: Battery
+        icon: Battery,
+        gradient: "from-emerald-400 via-teal-500 to-cyan-500",
+        glowColor: "rgba(45,212,191,0.5)",
     },
     {
         year: "2026",
         title: "Connected Drive",
         description: "Real-time vehicle communication with predictive maintenance alerts",
-        icon: Radio
+        icon: Radio,
+        gradient: "from-violet-400 via-purple-500 to-fuchsia-500",
+        glowColor: "rgba(168,85,247,0.5)",
     }
 ];
 
 export default function TechnologySection() {
     const containerRef = useRef<HTMLDivElement>(null);
+    const [activeIndex, setActiveIndex] = useState(-1);
+
     const { scrollYProgress } = useScroll({
         target: containerRef,
         offset: ["start end", "end start"]
@@ -34,6 +43,26 @@ export default function TechnologySection() {
 
     const opacity = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0, 1, 1, 0]);
     const scale = useTransform(scrollYProgress, [0, 0.2], [0.8, 1]);
+
+    // Car moves from top to bottom of the timeline
+    const carY = useTransform(scrollYProgress, [0.15, 0.85], ["0%", "100%"]);
+    const carOpacity = useTransform(scrollYProgress, [0.1, 0.2, 0.8, 0.9], [0, 1, 1, 0]);
+
+    // Track scroll to determine which icon the car is near
+    // 3 icons evenly spaced: thresholds at ~0.30, ~0.50, ~0.70
+    useMotionValueEvent(scrollYProgress, "change", (latest) => {
+        if (latest < 0.22) {
+            setActiveIndex(-1);
+        } else if (latest < 0.38) {
+            setActiveIndex(0); // Active Ride Control
+        } else if (latest < 0.55) {
+            setActiveIndex(1); // Intelligent Range
+        } else if (latest < 0.72) {
+            setActiveIndex(2); // Connected Drive
+        } else {
+            setActiveIndex(-1); // Car has passed all
+        }
+    });
 
     return (
         <section ref={containerRef} className="relative py-32 px-6 md:px-12 overflow-hidden bg-black">
@@ -73,13 +102,35 @@ export default function TechnologySection() {
 
                 {/* Timeline */}
                 <div className="relative">
-                    {/* Vertical line */}
-                    <div className="absolute left-1/2 top-0 bottom-0 w-[1px] bg-gradient-to-b from-transparent via-white/20 to-transparent hidden md:block" />
+                    {/* Vertical line — gradient colored */}
+                    <div className="absolute left-1/2 top-0 bottom-0 w-[2px] hidden md:block overflow-hidden">
+                        <div className="w-full h-full bg-gradient-to-b from-amber-500/30 via-teal-500/30 to-purple-500/30" />
+                    </div>
+
+                    {/* Scroll-driven Porsche car (top-down) along the timeline */}
+                    <motion.div
+                        style={{ top: carY, opacity: carOpacity }}
+                        className="absolute left-1/2 -translate-x-1/2 z-20 hidden md:block pointer-events-none"
+                    >
+                        <div className="relative -ml-[30px] w-[60px]">
+                            <Image
+                                src="/porsche-topdown.png"
+                                alt="Porsche"
+                                width={60}
+                                height={100}
+                                className="drop-shadow-[0_0_20px_rgba(255,255,255,0.3)]"
+                                style={{ objectFit: 'contain' }}
+                            />
+                            {/* Headlight glow effect */}
+                            <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-8 h-8 bg-yellow-300/20 rounded-full blur-lg" />
+                        </div>
+                    </motion.div>
 
                     <div className="space-y-32">
                         {innovations.map((item, index) => {
                             const Icon = item.icon;
                             const isEven = index % 2 === 0;
+                            const isActive = activeIndex === index;
 
                             return (
                                 <motion.div
@@ -98,49 +149,98 @@ export default function TechnologySection() {
                                             whileHover={{ scale: 1.05 }}
                                             className="inline-block mb-4"
                                         >
-                                            <div className="px-6 py-2 bg-white/5 backdrop-blur-sm border border-white/10 rounded-full">
-                                                <span className="text-sm font-mono text-white/70">{item.year}</span>
+                                            <div
+                                                className="px-6 py-2 backdrop-blur-sm rounded-full transition-all duration-500"
+                                                style={{
+                                                    background: isActive
+                                                        ? 'linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05))'
+                                                        : 'linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01))',
+                                                    borderWidth: '1px',
+                                                    borderStyle: 'solid',
+                                                    borderColor: isActive ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.08)',
+                                                }}
+                                            >
+                                                <span
+                                                    className={`text-sm font-mono font-semibold transition-all duration-500 ${isActive
+                                                            ? `bg-gradient-to-r ${item.gradient} bg-clip-text text-transparent`
+                                                            : 'text-white/30'
+                                                        }`}
+                                                >
+                                                    {item.year}
+                                                </span>
                                             </div>
                                         </motion.div>
 
-                                        <h3 className="text-4xl md:text-5xl font-light text-white mb-4 tracking-wide">
+                                        <h3 className={`text-4xl md:text-5xl font-light mb-4 tracking-wide transition-colors duration-500 ${isActive ? 'text-white' : 'text-white/40'
+                                            }`}>
                                             {item.title}
                                         </h3>
-                                        <p className="text-white/60 text-lg leading-relaxed max-w-md">
+                                        <p className={`text-lg leading-relaxed max-w-md transition-colors duration-500 ${isActive ? 'text-white/70' : 'text-white/30'
+                                            }`}>
                                             {item.description}
                                         </p>
                                     </div>
 
-                                    {/* Icon circle */}
+                                    {/* Icon circle — glows only when active */}
                                     <div className={`${isEven ? 'md:col-start-2' : 'md:col-start-1'} flex justify-center`}>
                                         <motion.div
                                             whileHover={{ rotate: 360, scale: 1.1 }}
                                             transition={{ duration: 0.6 }}
                                             className="relative"
                                         >
-                                            {/* Outer glow ring */}
-                                            <motion.div
-                                                animate={{ 
-                                                    scale: [1, 1.2, 1],
-                                                    opacity: [0.5, 0.2, 0.5]
+                                            {/* Outer glow ring — only when active */}
+                                            <div
+                                                className="absolute inset-0 rounded-full blur-xl transition-all duration-700"
+                                                style={{
+                                                    background: item.glowColor,
+                                                    opacity: isActive ? 0.6 : 0,
+                                                    transform: isActive ? 'scale(1.3)' : 'scale(1)',
                                                 }}
-                                                transition={{ 
-                                                    duration: 3,
-                                                    repeat: Infinity,
-                                                    ease: "easeInOut"
+                                            />
+
+                                            {/* Second glow layer */}
+                                            <div
+                                                className="absolute inset-0 rounded-full blur-2xl transition-all duration-700"
+                                                style={{
+                                                    background: item.glowColor,
+                                                    opacity: isActive ? 0.3 : 0,
+                                                    transform: isActive ? 'scale(1.5)' : 'scale(1)',
                                                 }}
-                                                className="absolute inset-0 bg-white/10 rounded-full blur-xl"
                                             />
 
                                             {/* Icon container */}
-                                            <div className="relative w-32 h-32 bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl border-2 border-white/20 rounded-full flex items-center justify-center">
-                                                <Icon className="w-12 h-12 text-white" />
+                                            <div className="relative w-32 h-32 rounded-full flex items-center justify-center overflow-hidden transition-all duration-500">
+                                                {/* Gradient border ring */}
+                                                <div
+                                                    className={`absolute inset-0 bg-gradient-to-br ${item.gradient} rounded-full transition-opacity duration-500`}
+                                                    style={{ opacity: isActive ? 1 : 0.15 }}
+                                                />
+                                                {/* Inner dark circle */}
+                                                <div className="absolute inset-[2px] bg-black/90 rounded-full" />
+                                                {/* Inner gradient fill — only when active */}
+                                                <div
+                                                    className={`absolute inset-[2px] bg-gradient-to-br ${item.gradient} rounded-full transition-opacity duration-500`}
+                                                    style={{ opacity: isActive ? 0.2 : 0.03 }}
+                                                />
+                                                {/* Icon */}
+                                                <Icon
+                                                    className="relative z-10 w-12 h-12 transition-all duration-500"
+                                                    style={{
+                                                        color: isActive ? 'white' : 'rgba(255,255,255,0.25)',
+                                                        filter: isActive ? `drop-shadow(0 0 12px ${item.glowColor})` : 'none',
+                                                    }}
+                                                />
                                             </div>
                                         </motion.div>
                                     </div>
 
-                                    {/* Center dot (desktop only) */}
-                                    <div className="hidden md:block absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full border-4 border-black" />
+                                    {/* Center dot */}
+                                    <div className="hidden md:block absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full border-4 border-black overflow-hidden transition-all duration-500">
+                                        <div
+                                            className={`absolute inset-0 bg-gradient-to-br ${item.gradient} rounded-full transition-opacity duration-500`}
+                                            style={{ opacity: isActive ? 1 : 0.2 }}
+                                        />
+                                    </div>
                                 </motion.div>
                             );
                         })}
