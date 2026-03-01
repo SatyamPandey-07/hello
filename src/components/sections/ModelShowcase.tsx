@@ -33,7 +33,7 @@ const ModelCard = ({ model, index }: { model: typeof carModels[0], index: number
                     initial={{ opacity: 0, y: 10 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
-                    className="text-sm tracking-[0.4em] uppercase text-white/50 mb-3"
+                    className="text-sm tracking-[0.4em] uppercase text-white/70 mb-3"
                 >
                     {model.tagline}
                 </motion.p>
@@ -50,7 +50,7 @@ const ModelCard = ({ model, index }: { model: typeof carModels[0], index: number
                     initial={{ opacity: 0 }}
                     whileInView={{ opacity: 1 }}
                     transition={{ delay: 0.4 }}
-                    className="text-lg text-white/70 leading-relaxed max-w-xl mb-10"
+                    className="text-lg text-white/80 leading-relaxed max-w-xl mb-10"
                 >
                     {model.description}
                 </motion.p>
@@ -63,15 +63,15 @@ const ModelCard = ({ model, index }: { model: typeof carModels[0], index: number
                 >
                     <div className="bg-black/40 backdrop-blur-md border border-white/5 rounded-xl p-4">
                         <p className="text-2xl md:text-3xl font-light text-white mb-1">{model.specs.power}</p>
-                        <p className="text-[10px] md:text-xs text-white/40 uppercase tracking-wider">Power</p>
+                        <p className="text-[10px] md:text-xs text-white/60 uppercase tracking-wider">Power</p>
                     </div>
                     <div className="bg-black/40 backdrop-blur-md border border-white/5 rounded-xl p-4">
                         <p className="text-2xl md:text-3xl font-light text-white mb-1">{model.specs.speed}</p>
-                        <p className="text-[10px] md:text-xs text-white/40 uppercase tracking-wider">Top Speed</p>
+                        <p className="text-[10px] md:text-xs text-white/60 uppercase tracking-wider">Top Speed</p>
                     </div>
                     <div className="bg-black/40 backdrop-blur-md border border-white/5 rounded-xl p-4">
                         <p className="text-2xl md:text-3xl font-light text-white mb-1">{model.specs.acceleration}</p>
-                        <p className="text-[10px] md:text-xs text-white/40 uppercase tracking-wider">0-60 mph</p>
+                        <p className="text-[10px] md:text-xs text-white/60 uppercase tracking-wider">0-60 mph</p>
                     </div>
                 </motion.div>
 

@@ -101,12 +101,31 @@ export default function ScrollController() {
             scrub: 1,
             onUpdate: (self) => { progress.current = self.progress; },
         });
-        return () => { st.kill(); };
+
+        const handleResize = () => {
+            if (camera instanceof THREE.PerspectiveCamera) {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+            }
+            ScrollTrigger.refresh();
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => {
+            st.kill();
+            window.removeEventListener('resize', handleResize);
+        };
     }, [camera]);
 
     useFrame(() => {
         const p = progress.current;
         const cam = camera as THREE.PerspectiveCamera;
+
+        // Dynamic FOV based on aspect ratio to keep car framed
+        const aspect = cam.aspect;
+        cam.fov = aspect < 1 ? 60 : 45; // Wider FOV for vertical/mobile screens
+        cam.updateProjectionMatrix();
+
         let pos: THREE.Vector3;
         let quat: THREE.Quaternion;
 

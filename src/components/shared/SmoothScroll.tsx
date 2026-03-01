@@ -27,7 +27,11 @@ export default function SmoothScroll({ children }: { children: React.ReactNode }
         gsap.ticker.add((time) => { lenis.raf(time * 1000); });
         gsap.ticker.lagSmoothing(0);
 
+        // Expose lenis for navigation
+        (window as any).lenis = lenis;
+
         return () => {
+            (window as any).lenis = null;
             lenis.destroy();
         };
     }, []);
