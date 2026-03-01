@@ -70,10 +70,17 @@ export default function Navbar() {
                                     <a
                                         key={link.label}
                                         href={link.href}
-                                        className="relative text-[0.7rem] tracking-[0.2em] uppercase text-white/40 hover:text-white/90 transition-colors duration-300 font-light py-1 group"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            const target = document.querySelector(link.href);
+                                            if (target && (window as any).lenis) {
+                                                (window as any).lenis.scrollTo(target, { offset: 0, duration: 1.5 });
+                                            }
+                                        }}
+                                        className="relative text-[0.7rem] tracking-[0.2em] uppercase text-white/70 hover:text-white transition-colors duration-300 font-light py-1 group"
                                     >
                                         {link.label}
-                                        <span className="absolute bottom-0 left-0 w-0 h-[1px] bg-white/40 group-hover:w-full transition-all duration-300" />
+                                        <span className="absolute bottom-0 left-0 w-0 h-[1px] bg-white/60 group-hover:w-full transition-all duration-300" />
                                     </a>
                                 ))}
                             </div>
@@ -124,7 +131,14 @@ export default function Navbar() {
                                                 animate={{ x: 0, opacity: 1 }}
                                                 transition={{ delay: i * 0.05 }}
                                                 className="text-sm tracking-[0.2em] uppercase text-white/50 hover:text-white transition-colors font-light py-2 border-b border-white/5"
-                                                onClick={() => setMobileOpen(false)}
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    setMobileOpen(false);
+                                                    const target = document.querySelector(link.href);
+                                                    if (target && (window as any).lenis) {
+                                                        (window as any).lenis.scrollTo(target, { offset: 0, duration: 1.5 });
+                                                    }
+                                                }}
                                             >
                                                 {link.label}
                                             </motion.a>
