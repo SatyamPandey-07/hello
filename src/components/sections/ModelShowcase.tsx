@@ -1,4 +1,6 @@
 "use client";
+// Triggering new deployment with .npmrc fix
+
 
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
