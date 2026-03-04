@@ -2,7 +2,7 @@
 
 A cinematic, luxury web experience featuring the **Porsche 911** with interactive 3D models, scroll-driven animations, AR test drive, and a premium dark-themed design.
 
-> **Live Preview:** `http://localhost:3000`
+> **Live Preview:** [https://porsche-reimagined.vercel.app/]
 
 ---
 
